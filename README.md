@@ -175,6 +175,3 @@ Node.js만 있으면 추가 패키지 설치 없이 바로 실행됩니다.
 - [OASIS](https://github.com/camel-ai/oasis) — MiroFish 핵심 시뮬레이션 엔진
 - Dead Internet Theory
 
----
-
-MIT License
