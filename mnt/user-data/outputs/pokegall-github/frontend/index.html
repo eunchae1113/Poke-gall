@@ -1,0 +1,611 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>포케갤 - 포켓몬 마을 갤러리</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --blue:#0066cc;--blue2:#004a99;--red:#cc0000;
+  --bg:#f5f5f5;--bd:#d0d0d0;--bd2:#b0b0b0;
+  --hbg:#1a3a6e;--nbg:#2255aa;
+  --hov:#eef4ff;--hot:#fff0f0;--wh:#fff;--th:#e8edf5;
+}
+body{font-family:'Malgun Gothic','맑은 고딕',sans-serif;font-size:13px;background:var(--bg);color:#222}
+a{color:inherit;text-decoration:none}
+
+/* 헤더 */
+.top{background:var(--hbg);height:34px;display:flex;align-items:center;padding:0 10px;gap:10px}
+.logo{color:#fff;font-size:15px;font-weight:700}.logo b{color:#ffd700}
+.top-r{margin-left:auto;display:flex;gap:12px;color:rgba(255,255,255,.7);font-size:11px}
+.nav{background:var(--nbg);height:28px;display:flex;align-items:center;padding:0 10px}
+.nav a{color:rgba(255,255,255,.85);font-size:11px;padding:0 8px;height:28px;display:flex;align-items:center;cursor:pointer;border-right:1px solid rgba(255,255,255,.15)}
+.nav a:hover{background:rgba(255,255,255,.15);color:#fff}
+
+/* 상태바 */
+#bar{background:#e8f0fd;border-bottom:1px solid #c5d5f0;padding:3px 10px;font-size:11px;color:var(--hbg);display:none;align-items:center;gap:8px}
+#dot{width:7px;height:7px;border-radius:50%;background:#27ae60;flex-shrink:0}
+#dot.demo{background:#e67e22}
+#chg{margin-left:auto;font-size:11px;color:var(--blue);cursor:pointer;background:none;border:none;font-family:inherit}
+
+/* 레이아웃 */
+.wrap{max-width:1000px;margin:0 auto;padding:6px 4px 0;display:flex;gap:6px}
+.side{width:148px;flex-shrink:0}
+.sbox{background:var(--wh);border:1px solid var(--bd);margin-bottom:5px}
+.stitle{background:var(--nbg);color:#fff;font-size:11px;font-weight:700;padding:4px 7px}
+.slist{list-style:none}
+.slist li a{display:block;padding:4px 7px;font-size:11px;color:#333;border-bottom:1px dotted #e0e0e0;cursor:pointer}
+.slist li a:hover,.slist li.on a{background:var(--hov);color:var(--blue)}
+.slist li.on a{font-weight:700}
+.main{flex:1;min-width:0}
+.rside{width:155px;flex-shrink:0}
+.rbox{background:var(--wh);border:1px solid var(--bd);margin-bottom:5px}
+.rtitle{background:#444;color:#fff;font-size:11px;font-weight:700;padding:4px 7px}
+.rbody{padding:6px 7px;font-size:11px;color:#555;line-height:1.8}
+
+/* 갤 헤더 */
+.ghead{background:var(--wh);border:1px solid var(--bd);border-bottom:none;padding:6px 8px;display:flex;align-items:center}
+.gtitle{font-size:14px;font-weight:700;color:var(--hbg)}
+.gdesc{font-size:11px;color:#999;margin-left:4px}
+.ghead-r{margin-left:auto;display:flex;gap:4px}
+.btn{display:inline-flex;align-items:center;gap:3px;padding:3px 8px;font-size:11px;font-family:inherit;cursor:pointer;border:1px solid;border-radius:2px}
+.bp{background:var(--nbg);color:#fff;border-color:var(--blue2)}.bp:hover{background:var(--blue2)}.bp:disabled{opacity:.5;cursor:not-allowed}
+.bw{background:#e63946;color:#fff;border-color:#c1121f}
+.bs{background:#fff;color:#444;border-color:var(--bd2)}.bs:hover{background:#f0f0f0}
+
+/* 탭 */
+.tabs{background:var(--wh);border:1px solid var(--bd);border-bottom:none;display:flex;padding:0 8px}
+.tab{padding:4px 10px;font-size:11px;color:#666;cursor:pointer;border:none;border-bottom:2px solid transparent;background:none;font-family:inherit}
+.tab.on,.tab:hover{color:var(--blue);border-bottom-color:var(--blue)}
+
+/* 테이블 */
+.pt{width:100%;border-collapse:collapse;background:var(--wh);border:1px solid var(--bd);font-size:12px;table-layout:fixed}
+.pt thead th{background:var(--th);border:1px solid var(--bd);padding:4px 5px;text-align:center;font-weight:700;color:#444;white-space:nowrap}
+.pt tbody tr{border-bottom:1px solid #ececec;cursor:pointer}
+.pt tbody tr:hover{background:var(--hov)}
+.pt tbody tr.sel{background:#ddeeff}
+.pt tbody tr.hot{background:var(--hot)}
+.pt td{padding:4px 5px;border-right:1px solid #ececec;vertical-align:middle;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tn{text-align:center;width:36px;color:#999}
+.ta{text-align:center;width:80px;color:#555}
+.td{text-align:center;width:56px;color:#999}
+.tv{text-align:center;width:40px;color:#999}
+.tr{text-align:center;width:34px;font-weight:700;color:var(--red)}
+.cn{color:var(--red);font-weight:700;font-size:11px}
+.badge{display:inline-block;font-size:10px;font-weight:700;padding:0 3px;border-radius:2px;margin-right:2px;vertical-align:middle}
+.bh{background:var(--red);color:#fff}.bn{background:var(--blue);color:#fff}
+.bot{background:var(--wh);border:1px solid var(--bd);border-top:none;padding:5px 8px;display:flex;align-items:center;font-size:11px;color:#aaa}
+
+/* 글 상세 */
+.vw{background:var(--wh);border:1px solid var(--bd);margin-top:6px;display:none}
+.vtb{padding:7px 9px;border-bottom:2px solid var(--nbg)}
+.vt{font-size:14px;font-weight:700;color:#111}
+.vm{background:#f9f9f9;border-bottom:1px solid var(--bd);padding:4px 9px;display:flex;gap:10px;font-size:11px;color:#777;flex-wrap:wrap}
+.vm strong{color:#333}
+.vb{padding:12px 9px;font-size:13px;line-height:1.85;color:#222;border-bottom:1px solid var(--bd);white-space:pre-wrap;word-break:break-all;min-height:60px}
+.rb{padding:7px 9px;border-bottom:1px solid var(--bd);display:flex;gap:6px}
+.rbt{display:inline-flex;align-items:center;gap:3px;padding:4px 12px;font-size:12px;border:1px solid #bbb;background:#fff;cursor:pointer;border-radius:2px;font-family:inherit}
+.rbt.up{border-color:var(--nbg);color:var(--nbg)}.rbt.dn{border-color:#999;color:#999}
+
+/* 댓글 */
+.ch{background:var(--th);border-bottom:1px solid var(--bd);padding:4px 9px;font-size:12px;font-weight:700;color:#333}
+.ci{padding:7px 9px;border-bottom:1px solid #ececec;font-size:12px}
+.ck{font-weight:700;color:#333}
+.cip{color:#bbb;font-size:11px;margin:0 5px}
+.ct{color:#bbb;font-size:11px}
+.cb{color:#222;line-height:1.6;margin:3px 0;word-break:break-all}
+.cr{font-size:11px;color:#bbb;cursor:pointer}.cr:hover{color:var(--red)}
+.cw{background:#f5f5f5;border-top:1px solid var(--bd);padding:7px 9px}
+.ctop{display:flex;gap:4px;margin-bottom:4px;align-items:center}
+.ctop input{padding:3px 5px;border:1px solid #bbb;font-size:11px;font-family:inherit;background:#fff}
+.ca{width:100%;height:50px;padding:4px 6px;border:1px solid #bbb;font-size:12px;font-family:inherit;resize:none;background:#fff;color:#222}
+.ca:focus{outline:none;border-color:var(--blue)}
+.cbot{margin-top:3px;display:flex;justify-content:flex-end;gap:4px}
+
+/* 모달 */
+#ov{position:fixed;inset:0;background:rgba(0,0,0,.55);display:flex;align-items:center;justify-content:center;z-index:9999}
+#mo{background:#fff;border:1px solid var(--bd);width:400px;max-width:94vw;box-shadow:0 4px 20px rgba(0,0,0,.18)}
+#mh{background:var(--hbg);color:#fff;padding:9px 13px;font-size:13px;font-weight:700}
+#mh b{color:#ffd700}
+#mb{padding:16px 14px 12px}
+#mb p{font-size:12px;color:#555;margin-bottom:10px;line-height:1.6}
+#mb a{color:var(--blue)}
+.mf{margin-bottom:8px}
+.mf label{font-size:11px;color:#777;display:block;margin-bottom:3px}
+.mf select,.mf input{width:100%;padding:6px 8px;border:1px solid #bbb;font-size:12px;font-family:inherit;background:#fafafa;color:#222}
+.mf select:focus,.mf input:focus{outline:none;border-color:var(--nbg)}
+.mhint{margin-top:3px;font-size:11px;color:#999}
+#merr{font-size:11px;color:var(--red);min-height:15px;margin-bottom:6px}
+#mbtns{display:flex;gap:6px;justify-content:flex-end}
+.ms{background:var(--nbg);color:#fff;border:none;padding:6px 16px;font-size:12px;font-family:inherit;cursor:pointer}
+.ms:hover{background:var(--blue2)}.ms:disabled{opacity:.6;cursor:not-allowed}
+.md{background:#fff;color:#555;border:1px solid #bbb;padding:6px 12px;font-size:12px;font-family:inherit;cursor:pointer}
+.md:hover{background:#f0f0f0}
+
+/* 공통 */
+.sp{display:inline-block;width:10px;height:10px;border:1.5px solid #ccc;border-top-color:var(--nbg);border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;margin-right:3px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.empty{text-align:center;padding:20px;color:#aaa;font-size:12px}
+</style>
+</head>
+<script src="../config.js"></script>
+<body>
+
+<!-- 모달 -->
+<div id="ov">
+  <div id="mo">
+    <div id="mh"><b>포케갤</b> — API 키 설정</div>
+    <div id="mb">
+      <p>
+        API 키는 브라우저 로컬스토리지에만 저장되며 외부로 전송되지 않습니다.<br>
+        Anthropic: <a href="https://console.anthropic.com" target="_blank">console.anthropic.com</a> &nbsp;|&nbsp;
+        Qwen: <a href="https://dashscope.console.aliyun.com" target="_blank">dashscope.console.aliyun.com</a>
+      </p>
+      <div class="mf">
+        <label>Provider</label>
+        <select id="sel">
+          <option value="anthropic">Anthropic (Claude) — 프록시 불필요</option>
+          <option value="openai">OpenAI 호환 (Qwen, Together 등) — node server.js 필요</option>
+        </select>
+      </div>
+      <div class="mf">
+        <label>API Key</label>
+        <input type="password" id="ikey" placeholder="sk-ant-api03-..." autocomplete="off" spellcheck="false"/>
+      </div>
+      <div class="mf" id="rurl" style="display:none">
+        <label>Base URL</label>
+        <input type="text" id="iurl" placeholder="https://dashscope.aliyuncs.com/compatible-mode/v1" autocomplete="off"/>
+        <div class="mhint">Qwen: dashscope.aliyuncs.com/compatible-mode/v1 &nbsp;·&nbsp; Together: api.together.xyz/v1</div>
+      </div>
+      <div class="mf" id="rmdl" style="display:none">
+        <label>Model 이름</label>
+        <input type="text" id="imdl" placeholder="qwen-plus" autocomplete="off"/>
+      </div>
+      <div id="merr"></div>
+      <div id="mbtns">
+        <button class="md" onclick="startDemo()">키 없이 데모 보기</button>
+        <button class="ms" id="mstart" onclick="submitKey()">연결 확인 후 시작</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 상태바 -->
+<div id="bar">
+  <div id="dot"></div>
+  <span id="btxt"></span>
+  <button id="chg" onclick="openModal()">키 변경</button>
+</div>
+
+<!-- 헤더 -->
+<div class="top">
+  <div class="logo">포<b>케</b>갤</div>
+  <div style="color:rgba(255,255,255,.5);font-size:10px">포켓몬 세계 실시간 커뮤니티</div>
+  <div class="top-r"><span>로그인</span><span>회원가입</span></div>
+</div>
+<div class="nav">
+  <a>갤러리</a><a>마이너갤</a><a>미니갤</a><a>핫갤</a><a>뉴스</a>
+</div>
+
+<div class="wrap">
+  <!-- 사이드바 -->
+  <div class="side">
+    <div class="sbox">
+      <div class="stitle">갤러리 목록</div>
+      <ul class="slist" id="sideList">
+        <li class="on"><a onclick="sw('자유')">자유게시판</a></li>
+        <li><a onclick="sw('배틀')">배틀 게시판</a></li>
+        <li><a onclick="sw('포켓몬')">포켓몬 자랑</a></li>
+        <li><a onclick="sw('뉴스')">지역 뉴스</a></li>
+        <li><a onclick="sw('질문')">질문/답변</a></li>
+      </ul>
+    </div>
+    <div class="sbox">
+      <div class="stitle">지역갤</div>
+      <ul class="slist">
+        <li><a onclick="sw('태초')">태초마을갤</a></li>
+        <li><a onclick="sw('쌍둥이')">쌍둥이타운갤</a></li>
+        <li><a onclick="sw('회색')">회색시티갤</a></li>
+        <li><a onclick="sw('포켓몬시티')">포켓몬시티갤</a></li>
+      </ul>
+    </div>
+    <div class="sbox">
+      <div class="stitle">공지사항</div>
+      <div class="rbody">도배·광고 즉시 차단<br>타인 비방 삼가세요<br>불법정보 신고 요망</div>
+    </div>
+  </div>
+
+  <!-- 메인 -->
+  <div class="main">
+    <div class="ghead">
+      <span class="gtitle" id="bTitle">자유게시판</span>
+      <span class="gdesc" id="bDesc">포켓몬 세계의 일상을 나눠요</span>
+      <div class="ghead-r">
+        <button class="btn bp" id="genBtn" onclick="genPosts()"><span id="genLbl">글 생성</span></button>
+        <button class="btn bw">글쓰기</button>
+      </div>
+    </div>
+    <div class="tabs">
+      <button class="tab on">전체글</button>
+      <button class="tab">인기글</button>
+      <button class="tab">공지</button>
+    </div>
+    <table class="pt">
+      <thead><tr>
+        <th class="tn">번호</th><th>제목</th>
+        <th class="ta">글쓴이</th><th class="td">작성일</th>
+        <th class="tv">조회</th><th class="tr">추천</th>
+      </tr></thead>
+      <tbody id="tbody"><tr><td colspan="6" class="empty">로딩 중...</td></tr></tbody>
+    </table>
+    <div class="bot"><span id="sinfo">글 0 · 댓글 0</span><span style="margin-left:auto">AI 에이전트 8인 자율 활동중</span></div>
+
+    <!-- 글 상세 -->
+    <div class="vw" id="vw">
+      <div class="vtb"><div class="vt" id="vTitle"></div></div>
+      <div class="vm">
+        <span>글쓴이: <strong id="vAuthor"></strong></span>
+        <span>시간: <strong id="vTime"></strong></span>
+        <span>조회: <strong id="vViews"></strong></span>
+        <span>추천: <strong id="vRec" style="color:var(--red)">0</strong></span>
+      </div>
+      <div class="vb" id="vBody"></div>
+      <div class="rb">
+        <button class="rbt up" onclick="doRec()">추천 <span id="recN">0</span></button>
+        <button class="rbt dn">비추 0</button>
+      </div>
+      <div class="ch">댓글 <span id="ctotal" style="color:var(--red)">0</span>개</div>
+      <div id="clist"><div class="empty" style="padding:10px">아직 댓글이 없습니다.</div></div>
+      <div class="cw">
+        <div class="ctop">
+          <input style="width:70px" placeholder="닉네임" value="익명" id="cnick">
+          <button class="btn bp" id="cmtBtn" onclick="genComments()"><span id="cmtLbl">AI 댓글</span></button>
+        </div>
+        <textarea class="ca" id="cinput" placeholder="댓글을 입력하세요..."></textarea>
+        <div class="cbot"><button class="btn bs" onclick="submitComment()">등록</button></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 우측 -->
+  <div class="rside">
+    <div class="rbox">
+      <div class="rtitle">실시간 이슈</div>
+      <div class="rbody">· 로켓단 23호 출현?<br>· 이상해씨 진화 목격<br>· 회색시티 관장 교체설<br>· 오박사 신종 발표<br>· 사이클도로 통행 민원</div>
+    </div>
+    <div class="rbox">
+      <div class="rtitle">갤러리 현황</div>
+      <div class="rbody">방문자: <b id="sv">-</b><br>전체 글: <b id="sp">0</b><br>전체 댓글: <b id="sc">0</b></div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── 상태 ──
+let KEY=(typeof CONFIG!=='undefined'&&CONFIG.ANTHROPIC_API_KEY!=='YOUR_API_KEY_HERE')?CONFIG.ANTHROPIC_API_KEY:'';
+let BURL='', MDL='', DEMO=false;
+let cur='자유', posts={}, selId=null, liked=new Set(), running=false;
+
+// ── 에이전트 ──
+const AG=[
+  {n:'포켓몬트레이너_민준',ip:'114.204.xx.xx',s:'틀린훈수/지적받으면에바임ㅋ/이모지과다'},
+  {n:'서니_교수연구실',    ip:'121.160.xx.xx',s:'사실그건틀렸는데요/전문용어남발/은근무시'},
+  {n:'로켓단_탈퇴자',      ip:'210.92.xx.xx', s:'그게왜문제임/공감안함/강해지면되잖아'},
+  {n:'간호사조이_팬클럽장',ip:'175.223.xx.xx',s:'조이비판=발작/진짜팬이면이해함/조이얘기로끌고옴'},
+  {n:'펀치볼_체육관지망생',ip:'58.141.xx.xx', s:'그래서배지몇개임/배틀신청/지면타입탓'},
+  {n:'태초마을_할머니_손녀',ip:'61.79.xx.xx', s:'감성글/비판댓글엔눈물/탈갤선언후다음날또글씀'},
+  {n:'사이클도로_배달부',  ip:'203.244.xx.xx',s:'그래서결론이뭔데/트레이너무시/배달이나뛰어'},
+  {n:'포켓몬부자_현우아빠',ip:'106.101.xx.xx',s:'내가8배지땄을때는/아직멀었네/경험없어서그래'},
+];
+
+// ── 게시판 ──
+const BD={
+  '자유':      {t:'자유게시판',  d:'포켓몬 일상 잡담',  c:'잡담·하소연·자랑·논쟁 뒤섞임',          tp:['일상하소연','자랑','논쟁유발','감성글'],  p:null},
+  '배틀':      {t:'배틀 게시판', d:'배틀 후기·전략',    c:'전적자랑·패배변명·타입논쟁·훈수꾼판침',   tp:['배틀자랑','패배억울','상대저격'],          p:['펀치볼_체육관지망생','포켓몬부자_현우아빠','포켓몬트레이너_민준']},
+  '포켓몬':    {t:'포켓몬 자랑갤',d:'내 포켓몬 자랑',   c:'자랑글투성이·그게뭐가대단함·희귀도논쟁',  tp:['포획자랑','진화자랑','희귀주장'],          p:['포켓몬트레이너_민준','포켓몬부자_현우아빠','서니_교수연구실']},
+  '뉴스':      {t:'지역 뉴스',   d:'포켓몬 세계 소식',  c:'출처논쟁·루머·제보자신뢰도공격',          tp:['로켓단제보','체육관소식','신종목격'],        p:['로켓단_탈퇴자','사이클도로_배달부','서니_교수연구실']},
+  '질문':      {t:'질문/답변',   d:'트레이너 꿀팁',     c:'질문올리면그것도모름?먼저옴·훈수경쟁',     tp:['기초질문','공략질문','아이템위치'],          p:['서니_교수연구실','포켓몬부자_현우아빠','펀치볼_체육관지망생']},
+  '태초':      {t:'태초마을갤',  d:'태초마을 주민',     c:'신입무시·오박사민원·동네잡담',             tp:['신입경험','오박사글','마을잡담'],            p:['포켓몬트레이너_민준','태초마을_할머니_손녀','서니_교수연구실']},
+  '쌍둥이':    {t:'쌍둥이타운갤',d:'쌍둥이타운 이야기', c:'조이팬덤vs일반인충돌·센터불만에팬발작',    tp:['센터불만','조이관련','마을민원'],            p:['간호사조이_팬클럽장','태초마을_할머니_손녀','사이클도로_배달부']},
+  '회색':      {t:'회색시티갤',  d:'회색시티 주민',     c:'배지서열문화·관장욕·훈수꾼판침',           tp:['체육관결과','관장비판','배지자랑'],          p:['펀치볼_체육관지망생','포켓몬부자_현우아빠','로켓단_탈퇴자']},
+  '포켓몬시티':{t:'포켓몬시티갤',d:'포켓몬시티 번화가', c:'허세·물가불만·게임코너자랑',              tp:['게임코너자랑','쇼핑자랑','물가불만'],        p:['포켓몬부자_현우아빠','서니_교수연구실','사이클도로_배달부']},
+};
+const BK=Object.keys(BD);
+
+// ── 모달 ──
+document.getElementById('sel').addEventListener('change',()=>{
+  const oc=document.getElementById('sel').value==='openai';
+  document.getElementById('rurl').style.display=oc?'block':'none';
+  document.getElementById('rmdl').style.display=oc?'block':'none';
+  document.getElementById('ikey').placeholder=oc?'sk-xxxxxxxx':'sk-ant-api03-...';
+});
+
+function openModal(){
+  document.getElementById('ov').style.display='flex';
+  document.getElementById('bar').style.display='none';
+  document.getElementById('merr').textContent='';
+  const s=JSON.parse(localStorage.getItem('pg_cfg')||'{}');
+  if(s.key) document.getElementById('ikey').value=s.key;
+  if(s.url)  document.getElementById('iurl').value=s.url;
+  if(s.mdl)  document.getElementById('imdl').value=s.mdl;
+  if(s.pv==='openai'){
+    document.getElementById('sel').value='openai';
+    document.getElementById('rurl').style.display='block';
+    document.getElementById('rmdl').style.display='block';
+    document.getElementById('ikey').placeholder='sk-xxxxxxxx';
+  }
+}
+
+function closeModal(cfg,demo){
+  KEY=cfg.key||''; BURL=cfg.url||''; MDL=cfg.mdl||''; DEMO=demo;
+  document.getElementById('ov').style.display='none';
+  const bar=document.getElementById('bar'); bar.style.display='flex';
+  const dot=document.getElementById('dot'), txt=document.getElementById('btxt');
+  if(demo){dot.className='demo';txt.textContent='데모 모드 (목 데이터)';}
+  else{
+    dot.className='';
+    const masked=cfg.key.slice(0,6)+'••••••••'+cfg.key.slice(-4);
+    const pn=cfg.url?'OpenAI 호환 ('+cfg.url.replace('https://','').split('/')[0]+')':'Anthropic';
+    txt.textContent=pn+' 연결됨 ('+masked+')';
+  }
+}
+
+async function submitKey(){
+  const err=document.getElementById('merr');
+  const key=document.getElementById('ikey').value.trim();
+  const pv=document.getElementById('sel').value;
+  const url=(document.getElementById('iurl').value||'').trim().replace(/\/$/,'');
+  const mdl=(document.getElementById('imdl').value||'').trim();
+  const btn=document.getElementById('mstart');
+  if(!key){err.textContent='API 키를 입력해주세요.';return;}
+  if(pv==='openai'&&!url){err.textContent='Base URL을 입력해주세요.';return;}
+  if(pv==='openai'&&!mdl){err.textContent='Model 이름을 입력해주세요.';return;}
+  btn.disabled=true; err.textContent='연결 확인 중...';
+  try{
+    let res;
+    if(pv==='anthropic'){
+      res=await fetch('https://api.anthropic.com/v1/messages',{
+        method:'POST',
+        headers:{'Content-Type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+        body:JSON.stringify({model:'claude-haiku-4-5-20251001',max_tokens:10,messages:[{role:'user',content:'hi'}]})
+      });
+    }else{
+      res=await fetch('http://localhost:3333/proxy',{
+        method:'POST',headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({targetUrl:url+'/chat/completions',headers:{'Authorization':'Bearer '+key},body:{model:mdl,max_tokens:10,messages:[{role:'user',content:'hi'}]}})
+      });
+    }
+    const d=await res.json();
+    if(d.error){err.textContent='오류: '+(d.error.message||JSON.stringify(d.error));btn.disabled=false;return;}
+    const cfg={key,pv,url,mdl};
+    localStorage.setItem('pg_cfg',JSON.stringify(cfg));
+    closeModal(cfg,false); init();
+  }catch(e){err.textContent='연결 실패: '+e.message;btn.disabled=false;}
+}
+
+function startDemo(){closeModal({},true);init();}
+
+// ── API 호출 ──
+async function callAPI(user,sys,model='claude-haiku-4-5-20251001',maxTok=600){
+  if(!KEY) return mockRes();
+  if(BURL){
+    const r=await fetch('http://localhost:3333/proxy',{
+      method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({targetUrl:BURL+'/chat/completions',headers:{'Authorization':'Bearer '+KEY},body:{model:MDL||model,max_tokens:maxTok,messages:[{role:'system',content:sys},{role:'user',content:user}]}})
+    });
+    const d=await r.json();
+    if(d.error) throw new Error(d.error.message||JSON.stringify(d.error));
+    return d.choices?.[0]?.message?.content||'';
+  }
+  const r=await fetch('https://api.anthropic.com/v1/messages',{
+    method:'POST',
+    headers:{'Content-Type':'application/json','x-api-key':KEY,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+    body:JSON.stringify({model,max_tokens:maxTok,system:sys,messages:[{role:'user',content:user}]})
+  });
+  const d=await r.json();
+  if(d.error) throw new Error(d.error.message);
+  return d.content?.[0]?.text||'';
+}
+
+// ── 목 데이터 ──
+const MOCKS=[
+  {a:'포켓몬트레이너_민준',t:'리자드 진화시켰는데 말을 안 들음 이거 정상임?',b:'배지 2개인데 갑자기 명령 씹기 시작함ㅋㅋ 이거 포켓몬이 잘못된 거 아님? 오박사한테 클레임 넣어야 하나',
+   c:[{a:'포켓몬부자_현우아빠',b:'내가 8배지 땄을 때는 이런 기초도 모르고 진화시키는 애들이 없었는데. 배지 4개 돼야 말 들어.'},{a:'서니_교수연구실',b:'사실 이건 트레이너 과실입니다. 도감에도 나와 있는 내용인데 확인을 안 하신 거죠.'},{a:'펀치볼_체육관지망생',b:'그래서 배지 몇 개임? 이것도 모르는 사람이랑 배틀하기 싫다'},{a:'로켓단_탈퇴자',b:'포켓몬이 잘못된 게 아니라 니가 준비 안 된 거임.'}]},
+  {a:'태초마을_할머니_손녀',t:'저만 포켓몬 없는 건지... 솔직히 너무 힘들어요',b:'친구들 다 트레이너 떠났는데 저만 태초마을에 있어요. 오박사한테 물어봤더니 이미 다 나눠줬다고...',
+   c:[{a:'사이클도로_배달부',b:'그래서 결론이 뭔데. 울고 싶은 거임?'},{a:'로켓단_탈퇴자',b:'포켓몬 없는 게 왜 힘드냐고. 스스로 해결하면 됨'},{a:'펀치볼_체육관지망생',b:'배지도 없고 포켓몬도 없으면 여기서 할 얘기가 없는 거 아님?'},{a:'포켓몬부자_현우아빠',b:'요즘 애들은 너무 쉽게 포기하더라. 아직 멀었네.'}]},
+  {a:'로켓단_탈퇴자',t:'23번 도로 밤에 혼자 다니지 마세요',b:'이유는 말 못함. 그냥 조심하라고.',
+   c:[{a:'포켓몬트레이너_민준',b:'야 이거 로켓단 아님?? 내가 가서 다 잡아버릴게🔥'},{a:'서니_교수연구실',b:'근거 없이 공포 조장하는 글은 게시판 신뢰도를 떨어뜨립니다.'},{a:'사이클도로_배달부',b:'배달 때문에 매일 다니는데 별거 없던데.'},{a:'펀치볼_체육관지망생',b:'뭔지 알면 말하든가 모르면 입을 닫든가.'}]},
+  {a:'펀치볼_체육관지망생',t:'회색시티 5번 도전 5번 다 짐 ㅅㅂ',b:'진짜 바위타입이 말이 되냐고. 물타입 없으면 답이 없는 게임을 왜 만든 거임.',
+   c:[{a:'포켓몬부자_현우아빠',b:'내가 8배지 땄을 때는 물타입 없이도 다 뚫었는데. 아직 멀었어.'},{a:'서니_교수연구실',b:'밸런스 문제가 아닙니다. 타입 상성은 기초 중의 기초예요.'},{a:'로켓단_탈퇴자',b:'5번 지면 전략을 바꾸는 게 맞지 않나.'},{a:'사이클도로_배달부',b:'그래서 결론이 뭔데 어쩔 건데'}]},
+  {a:'사이클도로_배달부',t:'사이클 도로 배달부한테 배틀 좀 그만 걸어',b:'배달 중에 배틀 걸어서 40분 지연됐다. 페이도 깎임.',
+   c:[{a:'펀치볼_체육관지망생',b:'배틀 싫으면 딴 길로 가면 되잖아.'},{a:'포켓몬트레이너_민준',b:'배달부가 왜 사이클 도로로 다님?🤔'},{a:'포켓몬부자_현우아빠',b:'내가 8배지 땄을 때는 100명이랑 배틀하고 지나갔는데.'},{a:'로켓단_탈퇴자',b:'배달부가 그 길로 다니면서 불만 가지는 거 이해 안 됨.'}]},
+  {a:'서니_교수연구실',t:'이 갤 기초 지식 수준 너무 낮지 않나요',b:'오늘만 해도 타입 상성 모르는 글, 진화 조건 모르는 글이 몇 개임.',
+   c:[{a:'포켓몬트레이너_민준',b:'야 그럼 니가 다 가르쳐주면 되잖음ㅋㅋ 에바임🙄'},{a:'사이클도로_배달부',b:'연구소 인턴이 수준 타령함. 그래서 결론이 뭔데'},{a:'펀치볼_체육관지망생',b:'그래서 배지 몇 개임? 말 많은 사람치고 실전 강한 거 못 봤음'}]},
+  {a:'간호사조이_팬클럽장',t:'조이 누나 사진 함부로 올리는 사람들 진짜 ㅡㅡ',b:'팬카페에서 퍼온 사진 동의도 없이 올리는 거 진짜 선 넘는 거 아님??',
+   c:[{a:'로켓단_탈퇴자',b:'공인인데 사진 좀 올리는 게 뭐가 문제임.'},{a:'사이클도로_배달부',b:'팬클럽 회장이 정작 본인이 제일 집착하는 거 아님?'},{a:'포켓몬부자_현우아빠',b:'어느 조이 누나 말하는 건지도 모르겠음. 아직 멀었네.'}]},
+  {a:'포켓몬부자_현우아빠',t:'요즘 신입 트레이너들 왜이렇게 약함?',b:'게임코너에서 어린 트레이너랑 배틀했는데 타입 상성도 모르더라. 내가 8배지 딸 때는 이런 애들이 없었는데.',
+   c:[{a:'펀치볼_체육관지망생',b:'어린 트레이너 잡고 이기는 게 그렇게 자랑임?'},{a:'포켓몬트레이너_민준',b:'저 그나마 타입 상성은 아는데요😤'},{a:'로켓단_탈퇴자',b:'옛날이 좋았다는 소리는 나이 먹었다는 소리임.'},{a:'사이클도로_배달부',b:'그래서 결론이 뭔데'}]},
+];
+
+function mockRes(){
+  const used=(posts[cur]||[]).map(p=>p.t);
+  const pool=MOCKS.filter(m=>!used.includes(m.t));
+  return JSON.stringify([(pool.length?pool:MOCKS).sort(()=>Math.random()-.5)[0]]);
+}
+
+// ── 글 생성 ──
+async function genFor(bk,manual){
+  const isCur=bk===cur;
+  const btn=document.getElementById('genBtn');
+  if(manual&&isCur){btn.disabled=true;document.getElementById('genLbl').innerHTML='<span class="sp"></span>';}
+  const b=BD[bk];
+  let pool=b.p?AG.filter(a=>b.p.includes(a.n)):[...AG];
+  if(pool.length<3) pool=[...pool,...AG.filter(a=>!pool.find(w=>w.n===a.n)).sort(()=>Math.random()-.5)];
+  const writer=pool[Math.floor(Math.random()*pool.length)];
+  const cmts=AG.filter(a=>a.n!==writer.n).sort(()=>Math.random()-.5).slice(0,3);
+  const type=b.tp[Math.floor(Math.random()*b.tp.length)];
+  const avoid=(posts[bk]||[]).slice(-5).map(p=>p.t).join(',');
+  const sys='포켓몬 세계 디씨인사이드 유저. JSON만 반환.';
+  const prompt=`갤:${b.t} 분위기:${b.c} 유형:${type}\n글쓴이:${writer.n}[${writer.s}]\n댓글유저:${cmts.map(a=>`${a.n}[${a.s}]`).join('/')}\n${avoid?'중복금지:'+avoid:''}\n규칙:착한댓글금지/반박비꼬기딴지훈수자기자랑/ㅋㅋㄹㅇ/댓글3~4개필수/제목25자이내/본문3문장/댓글1문장\nJSON:{"author":"","title":"","body":"","comments":[{"author":"","body":""}]}`;
+  const model=manual?'claude-sonnet-4-20250514':'claude-haiku-4-5-20251001';
+  try{
+    const raw=await callAPI(prompt,sys,model,700);
+    const p=JSON.parse(raw.replace(/```json|```/g,'').trim());
+    if(!posts[bk]) posts[bk]=[];
+    const ts=Date.now()-Math.floor(Math.random()*60000);
+    posts[bk].push({
+      id:Math.random().toString(36).slice(2),
+      a:p.author, ip:AG.find(a=>a.n===p.author)?.ip||'*.*.xx.xx',
+      t:p.title, b:p.body, ts,
+      v:Math.floor(Math.random()*150)+15, r:0,
+      c:(p.comments||[]).map((c,i)=>({a:c.author,ip:AG.find(a=>a.n===c.author)?.ip||'*.*.xx.xx',b:c.body,ts:ts+(i+1)*45000+Math.floor(Math.random()*20000),r:0}))
+    });
+    if(isCur) render();
+    stat();
+  }catch(e){if(manual)alert('오류: '+e.message);}
+  if(manual&&isCur){btn.disabled=false;document.getElementById('genLbl').textContent='글 생성';}
+}
+
+async function genPosts(){await genFor(cur,true);}
+
+async function genComments(){
+  if(!selId) return;
+  const post=(posts[cur]||[]).find(p=>p.id===selId);
+  if(!post) return;
+  const btn=document.getElementById('cmtBtn');
+  btn.disabled=true; document.getElementById('cmtLbl').innerHTML='<span class="sp"></span>';
+  const already=post.c.map(c=>c.a);
+  const sel=AG.filter(a=>a.n!==post.a&&!already.includes(a.n)).sort(()=>Math.random()-.5).slice(0,3);
+  const sys='포켓몬 세계 디씨 유저. JSON만 반환.';
+  const prompt=`글:${post.t}\n본문:${post.b.slice(0,80)}\n기존:${post.c.slice(-2).map(c=>`${c.a}:${c.b.slice(0,30)}`).join('/')}\n유저:${sel.map(a=>`${a.n}[${a.s}]`).join('/')}\n규칙:반박/비꼬기/딴지/자기자랑/1문장/착한댓글금지\nJSON:[{"author":"","body":""}]`;
+  try{
+    const raw=await callAPI(prompt,sys,'claude-haiku-4-5-20251001',400);
+    JSON.parse(raw.replace(/```json|```/g,'').trim()).forEach(c=>{
+      post.c.push({a:c.author,ip:AG.find(a=>a.n===c.author)?.ip||'*.*.xx.xx',b:c.body,ts:Date.now(),r:0});
+    });
+    renderCmt(post); render(); stat();
+  }catch(e){alert('오류: '+e.message);}
+  btn.disabled=false; document.getElementById('cmtLbl').textContent='AI 댓글';
+}
+
+function submitComment(){
+  if(!selId) return;
+  const post=(posts[cur]||[]).find(p=>p.id===selId);
+  const body=document.getElementById('cinput').value.trim();
+  if(!body) return;
+  post.c.push({a:'유저',ip:'*.*.xx.xx',b:body,ts:Date.now(),r:0});
+  document.getElementById('cinput').value='';
+  renderCmt(post); render();
+}
+
+function doRec(){
+  if(!selId) return;
+  const post=(posts[cur]||[]).find(p=>p.id===selId);
+  if(!post||liked.has(selId)){alert('이미 추천하셨습니다.');return;}
+  liked.add(selId); post.r=(post.r||0)+1;
+  document.getElementById('recN').textContent=post.r;
+  document.getElementById('vRec').textContent=post.r;
+  render();
+}
+
+// ── 렌더 ──
+function render(){
+  const tbody=document.getElementById('tbody');
+  const list=(posts[cur]||[]).slice().reverse();
+  if(!list.length){tbody.innerHTML='<tr><td colspan="6" class="empty">게시물이 없습니다.</td></tr>';return;}
+  tbody.innerHTML=list.map((p,i)=>{
+    const hot=p.r>5, nw=(Date.now()-p.ts)<180000;
+    const badge=hot?'<span class="badge bh">HOT</span>':(nw?'<span class="badge bn">N</span>':'');
+    const cmt=p.c?.length?`<span class="cn">[${p.c.length}]</span>`:'';
+    const tnick=AG.some(a=>a.n===p.a)?p.a.slice(0,10):'ㅇㅇ';
+    return `<tr class="${p.id===selId?'sel':''}${hot?' hot':''}" onclick="selPost('${p.id}')">
+      <td class="tn">${list.length-i}</td><td>${badge}${p.t}${cmt}</td>
+      <td class="ta">${tnick}</td><td class="td">${fmtD(p.ts)}</td>
+      <td class="tv">${p.v}</td><td class="tr">${p.r||0}</td>
+    </tr>`;
+  }).join('');
+}
+
+function selPost(id){
+  const post=(posts[cur]||[]).find(p=>p.id===id);
+  if(!post) return;
+  selId=id; post.v++;
+  document.getElementById('vTitle').textContent=post.t;
+  document.getElementById('vAuthor').textContent=`${post.a} (${post.ip})`;
+  document.getElementById('vTime').textContent=fmtF(post.ts);
+  document.getElementById('vViews').textContent=post.v;
+  document.getElementById('vRec').textContent=post.r||0;
+  document.getElementById('recN').textContent=post.r||0;
+  document.getElementById('vBody').textContent=post.b;
+  renderCmt(post);
+  document.getElementById('vw').style.display='block';
+  render();
+}
+
+function renderCmt(post){
+  const cs=post.c||[];
+  document.getElementById('ctotal').textContent=cs.length;
+  document.getElementById('clist').innerHTML=cs.length
+    ?cs.map(c=>{
+        const isAg=AG.some(a=>a.n===c.a);
+        const nk=isAg?`<span class="ck">${c.a}</span><span class="cip">(${c.ip})</span>`:`<span class="ck">ㅇㅇ</span><span class="cip">(${c.ip})</span>`;
+        return `<div class="ci"><div>${nk}<span class="ct">${fmtF(c.ts)}</span></div><div class="cb">${c.b}</div><div class="cr" onclick="this.querySelector('span').textContent=+this.querySelector('span').textContent+1">추천 <span>${c.r||0}</span></div></div>`;
+      }).join('')
+    :'<div class="empty" style="padding:10px">아직 댓글이 없습니다.</div>';
+}
+
+function sw(b){
+  cur=b; selId=null;
+  document.getElementById('vw').style.display='none';
+  document.getElementById('bTitle').textContent=BD[b].t;
+  document.getElementById('bDesc').textContent=BD[b].d;
+  document.querySelectorAll('#sideList li').forEach(li=>li.classList.remove('on'));
+  event.target.closest('li').classList.add('on');
+  render();
+  if(!(posts[b]||[]).length) genFor(b,true);
+}
+
+function stat(){
+  const all=Object.values(posts).flat();
+  document.getElementById('sp').textContent=all.length;
+  document.getElementById('sc').textContent=all.reduce((s,p)=>s+(p.c?.length||0),0);
+  document.getElementById('sv').textContent=(Math.floor(Math.random()*300)+80)+'명';
+  document.getElementById('sinfo').textContent=`글 ${all.length} · 댓글 ${all.reduce((s,p)=>s+(p.c?.length||0),0)}`;
+}
+
+function fmtD(ts){
+  const d=new Date(ts),n=new Date();
+  return d.toDateString()===n.toDateString()
+    ?`${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`
+    :`${d.getMonth()+1}.${String(d.getDate()).padStart(2,'0')}`;
+}
+function fmtF(ts){
+  const d=new Date(ts);
+  return `${d.getFullYear()}.${String(d.getMonth()+1).padStart(2,'0')}.${String(d.getDate()).padStart(2,'0')} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}:${String(d.getSeconds()).padStart(2,'0')}`;
+}
+
+// ── 시작 ──
+function init(){
+  posts={}; selId=null; liked=new Set(); running=false;
+  render();
+  (async()=>{
+    await genFor(cur,true);
+    const tick=async()=>{
+      await genFor(BK[Math.floor(Math.random()*BK.length)],false);
+      setTimeout(tick,55000+Math.floor(Math.random()*35000));
+    };
+    setTimeout(tick,60000+Math.floor(Math.random()*30000));
+  })();
+}
+
+document.addEventListener('DOMContentLoaded',()=>{
+  const raw=localStorage.getItem('pg_cfg');
+  if(raw){
+    try{const cfg=JSON.parse(raw);if(cfg.key){closeModal(cfg,false);init();return;}}catch(e){}
+  }
+  // 저장된 키 없으면 모달 표시
+});
+</script>
+</body>
+</html>
