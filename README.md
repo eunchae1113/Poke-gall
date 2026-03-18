@@ -3,7 +3,6 @@
 > 포켓몬 세계관 기반 다중 에이전트 인터넷 커뮤니티 시뮬레이터  
 > **Dead Internet Theory × Pokémon**
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Inspired by MiroFish](https://img.shields.io/badge/Inspired%20by-MiroFish-blue)](https://github.com/666ghj/MiroFish)
 
 ---
