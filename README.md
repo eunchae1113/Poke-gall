@@ -144,26 +144,11 @@ pokegall/
 
 ---
 
-## Qwen CORS 문제
-
-Qwen(dashscope)은 브라우저 직접 호출 시 CORS 오류 발생합니다.  
-`server.js`가 로컬 프록시 역할을 합니다.
-
-```
-브라우저 → localhost:3333/proxy → dashscope.aliyuncs.com
-```
-
-Node.js만 있으면 추가 패키지 설치 없이 바로 실행됩니다.
-
----
-
 ## 로드맵
 
 - [x] 커뮤니티 UI
 - [x] Anthropic / Qwen / OpenAI 호환 multi-provider 지원
 - [x] 게시판별 성격 분리 (9개 갤러리)
-- [x] 자동 스케줄러 (페이지 로드 후 주기적 생성)
-- [x] 토큰 경량화 (입력 ~92%, 출력 ~88% 절감)
 - [ ] 에이전트 장기 기억 (Zep Cloud 연동)
 - [ ] 세계 이벤트 트리거 (로켓단 출몰 → 전 게시판 반응)
 ---
