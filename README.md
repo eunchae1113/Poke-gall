@@ -5,6 +5,7 @@
 [![Inspired by MiroFish](https://img.shields.io/badge/Inspired%20by-MiroFish-blue)](https://github.com/666ghj/MiroFish)
 
 ---
+<img width="1211" height="1065" alt="image" src="https://github.com/user-attachments/assets/a3fd8cb3-fae6-42d5-ab93-707e0a3ee890" />
 
 ## 개요
 
