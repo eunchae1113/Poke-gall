@@ -74,10 +74,21 @@ body{font-family:'Malgun Gothic','맑은 고딕',sans-serif;font-size:13px;backg
 .sp{display:inline-block;width:10px;height:10px;border:1.5px solid #ccc;border-top-color:var(--nbg);border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;margin-right:3px}
 @keyframes spin{to{transform:rotate(360deg)}}
 .empty{text-align:center;padding:20px;color:#aaa;font-size:12px}
+#keybar{background:#fffbe6;border-bottom:1px solid #ffe58f;padding:5px 10px;display:flex;align-items:center;gap:8px;font-size:12px;color:#555}
+#keybar input{flex:1;max-width:340px;padding:4px 8px;border:1px solid #d4b106;font-size:12px;font-family:inherit;background:#fff}
+#keybar button{padding:4px 12px;background:#2255aa;color:#fff;border:none;font-size:12px;font-family:inherit;cursor:pointer;border-radius:2px}
+#keybar button:hover{background:#1a4488}
+#keybar .saved{color:#27ae60;font-weight:700}
 </style>
 </head>
 <body>
-<div id="bar"><div id="dot"></div><span id="btxt">Claude 실시간 생성 중...</span></div>
+<div id="keybar">
+  <span>Anthropic API Key:</span>
+  <input type="password" id="keyinput" placeholder="sk-ant-api03-..." autocomplete="off" spellcheck="false"/>
+  <button onclick="saveKey()">저장 후 시작</button>
+  <span id="keymsg"></span>
+</div>
+<div id="bar"><div id="dot"></div><span id="btxt">API 키를 입력하세요</span></div>
 <div class="top">
   <div class="logo">포<b>케</b>갤</div>
   <div style="color:rgba(255,255,255,.5);font-size:10px">포켓몬 세계 실시간 커뮤니티</div>
@@ -183,6 +194,28 @@ body{font-family:'Malgun Gothic','맑은 고딕',sans-serif;font-size:13px;backg
   </div>
 </div>
 <script>
+// API 키 관리
+let API_KEY = localStorage.getItem('pg_apikey') || '';
+
+function saveKey() {
+  const key = document.getElementById('keyinput').value.trim();
+  if (!key) { document.getElementById('keymsg').textContent = '키를 입력하세요'; return; }
+  if (!key.startsWith('sk-')) { document.getElementById('keymsg').textContent = '올바른 키 형식이 아닙니다'; return; }
+  API_KEY = key;
+  localStorage.setItem('pg_apikey', key);
+  document.getElementById('keymsg').innerHTML = '<span class="saved">✓ 저장됨</span>';
+  document.getElementById('keybar').style.background = '#f6ffed';
+  document.getElementById('btxt').textContent = 'Claude 실시간 생성 중...';
+  init();
+}
+
+// 저장된 키 있으면 자동 시작
+if (API_KEY) {
+  document.getElementById('keymsg').innerHTML = '<span class="saved">✓ 저장된 키 사용중</span>';
+  document.getElementById('keybar').style.background = '#f6ffed';
+  document.getElementById('keyinput').value = API_KEY;
+}
+
 const AG=[
   {n:'포켓몬트레이너_민준', ip:'114.204.xx.xx', s:'틀린훈수/지적받으면에바임ㅋ/이모지과다'},
   {n:'서니_교수연구실',     ip:'121.160.xx.xx', s:'사실그건틀렸는데요/전문용어남발/은근무시'},
@@ -218,7 +251,7 @@ let cur='자유',posts={},selId=null,liked=new Set();
 async function callClaude(user,sys,maxTok=700){
   const res=await fetch('https://api.anthropic.com/v1/messages',{
     method:'POST',
-    headers:{'Content-Type':'application/json','anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+    headers:{'Content-Type':'application/json','anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true','x-api-key':API_KEY},
     body:JSON.stringify({model:'claude-haiku-4-5-20251001',max_tokens:maxTok,system:sys,messages:[{role:'user',content:user}]})
   });
   const d=await res.json();
@@ -375,14 +408,20 @@ function stat(){
 function fmtD(ts){const d=new Date(ts),n=new Date();return d.toDateString()===n.toDateString()?`${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`:`${d.getMonth()+1}.${String(d.getDate()).padStart(2,'0')}`;}
 function fmtF(ts){const d=new Date(ts);return`${d.getFullYear()}.${String(d.getMonth()+1).padStart(2,'0')}.${String(d.getDate()).padStart(2,'0')} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}:${String(d.getSeconds()).padStart(2,'0')}`;}
 
-(async()=>{
-  await genFor(cur,true);
-  const tick=async()=>{
-    await genFor(BK[Math.floor(Math.random()*BK.length)],false);
-    setTimeout(tick,55000+Math.floor(Math.random()*35000));
-  };
-  setTimeout(tick,60000+Math.floor(Math.random()*30000));
-})();
+function init() {
+  if (!API_KEY) { document.getElementById('btxt').textContent = 'API 키를 입력하세요'; return; }
+  (async()=>{
+    await genFor(cur,true);
+    const tick=async()=>{
+      await genFor(BK[Math.floor(Math.random()*BK.length)],false);
+      setTimeout(tick,55000+Math.floor(Math.random()*35000));
+    };
+    setTimeout(tick,60000+Math.floor(Math.random()*30000));
+  })();
+}
+
+// 페이지 로드시 저장된 키 있으면 바로 시작
+if (API_KEY) init();
 </script>
 </body>
 </html>
